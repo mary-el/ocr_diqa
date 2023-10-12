@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectTypeGuids>{6c0efafa-1a04-41b6-a6d7-511b90951b5b};{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>src\data\parsed_image.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <InterpreterId>CondaEnv|CondaEnv|python3.8</InterpreterId>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="src\data\features\cc_features.py" />
+    <Compile Include="src\data\features\morph_based_features.py" />
+    <Compile Include="src\data\features\noise_removal_based_features.py" />
+    <Compile Include="src\data\features\spatial_characteristic_features.py" />
+    <Compile Include="src\data\features\statistical_features.py" />
+    <Compile Include="src\data\features\utils\libsmop.py" />
+    <Compile Include="src\data\features\utils\logGabor_2D.py" />
+    <Compile Include="src\data\features\utils\lowpassfilter.py" />
+    <Compile Include="src\data\parsed_image.py" />
+    <Compile Include="src\regression.py" />
+    <Compile Include="src\utils.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="data\img1.jpg" />
+    <Content Include="data\img2.jpg" />
+    <Content Include="environment.yml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="data\" />
+    <Folder Include="src\" />
+    <Folder Include="src\data\" />
+    <Folder Include="src\data\features\" />
+    <Folder Include="src\data\features\utils\" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="CondaEnv|CondaEnv|python3.8" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>
