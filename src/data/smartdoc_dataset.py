@@ -5,7 +5,8 @@ from typing import Tuple
 
 import cv2
 import numpy as np
-import pandas as pd
+import polars as pl
+import tqdm
 
 from src.data.parsed_image import ParsedImage
 from src.settings import N_PROC
@@ -86,7 +87,7 @@ def find_page(thresh: np.array) -> Tuple[np.array, tuple]:
 
 
 def get_data_series(file_name: str, finereader_path: Path, tesseract_path: Path, image_folder_path: Path,
-                    size: int) -> pd.Series:
+                    size: int) -> pl.Series:
     """
     Get feature vector for one document
     """
@@ -96,14 +97,18 @@ def get_data_series(file_name: str, finereader_path: Path, tesseract_path: Path,
     image = cv2.imread(str(img_path))
     image = preprocess_image(image, size)
     parsed_image = ParsedImage(image, file_name)
+    parsed_image.show_image()
+
     with open(tesseract_path, 'r') as tesseract_file:
         tesseract_acc = float(tesseract_file.read().split()[12][:-1])
     with open(finereader_path, 'r') as finereader_file:
         finereader_acc = float(finereader_file.read().split()[12][:-1])
     series = parsed_image.series
-    series['tess_acc'] = tesseract_acc
-    series['fine_acc'] = finereader_acc
-    series = series.astype('float')
+    series = series.with_columns([
+        pl.Series(name='tess_acc', values=[tesseract_acc]),
+        pl.Series(name='fine_acc', values=[finereader_acc]),
+    ])
+    series = series.cast(pl.Float32)
     return series
 
 
@@ -120,13 +125,15 @@ def create_smartdoc_ds(path: Path, save_file: str, size: int = 1024) -> None:
     for i, image_folder_path in enumerate(images_folder_paths):
         with mp.Pool(N_PROC) as pool:
             df.extend(pool.starmap(get_data_series,
-                                   [(file_name, finereader_paths[i], tesseract_paths[i], image_folder_path, size) for
-                                    file_name in file_names[i]]))
-    df = pd.concat(df, axis=1).T
+                                   tqdm.tqdm(
+                                       [(file_name, finereader_paths[i], tesseract_paths[i], image_folder_path, size)
+                                        for file_name in file_names[i]])))
+    df = pl.concat(df, rechunk=True)
     with open(save_file, 'wb') as f:
         pickle.dump(df, f)
 
 
 if __name__ == '__main__':
     from src.settings import RAW_DATA_PATH
-    create_smartdoc_ds(RAW_DATA_PATH, r'data/short_ds.pkl')
+
+    create_smartdoc_ds(RAW_DATA_PATH, r'data/polars_ds.pkl')
