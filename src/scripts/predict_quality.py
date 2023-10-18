@@ -23,7 +23,7 @@ from src.utils import catchtime
 def split_dataset(load_file: str, save_file: str) -> None:
     with open(str(load_file), 'rb') as f:
         df = pickle.load(f)
-    df = df.drop(columns=['spatial.gradients_4', 'tess_acc'])
+    df = df.drop(columns=['spatial.gradients_4', 'tess_acc', 'cc.SWS',	'cc.BCF',	'cc.SW_1',	'cc.SW_2'])
     df = df.fill_null(0)
     arr = np.array(df)
     X, y = arr[:, :-1], arr[:, -1]
@@ -134,8 +134,8 @@ def feature_importance(pipe: Pipeline, X_test: np.array, y_test: np.array) -> No
 
 if __name__ == '__main__':
     # create_smartdoc_ds(RAW_DATA_PATH, r'data/small_ds.pkl')
-    ds_file = r'data/polars_ds.pkl'
-    ds_split_file = r'data/polars_ds_split.pkl'
+    ds_file = r'data/ds_1.pkl'
+    ds_split_file = r'data/ds_old_split.pkl'
     split_dataset(ds_file, ds_split_file)
     X_train, X_test, y_train, y_test = load_split_ds(ds_split_file)
     model = SVR(kernel='rbf', gamma=0.25)
@@ -146,5 +146,5 @@ if __name__ == '__main__':
         y_test, y_pred, results = evaluate_model(pipe, X_test, y_test)
     print(results)
     # # plot(y_test, y_pred)
-    # # print(grid_search(X_train, y_train))
-    feature_importance(pipe, X_test, y_test)
+    # print(grid_search(X_train, y_train))
+    # feature_importance(pipe, X_test, y_test)
