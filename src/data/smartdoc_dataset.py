@@ -5,11 +5,11 @@ from pathlib import Path
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import polars as pl
 import tqdm
 
 from src.data.parsed_image import ParsedImage
 from src.settings import N_PROC, RAW_DATA_PATH
+from src.utils.common import resize
 
 
 def resize(img: np.array, width: int) -> np.array:
@@ -92,7 +92,7 @@ def find_page(thresh: np.array):
 
 
 def get_data_series(file_name: str, finereader_path: Path, tesseract_path: Path, image_folder_path: Path,
-                    size: int) -> pl.Series:
+                    size: int) -> np.array:
     """
     Get feature vector for one document
     """
@@ -104,10 +104,12 @@ def get_data_series(file_name: str, finereader_path: Path, tesseract_path: Path,
         tesseract_acc = float(tesseract_file.read().split()[12][:-1])
     with open(finereader_path, 'r') as finereader_file:
         finereader_acc = float(finereader_file.read().split()[12][:-1])
-    features = features.with_columns([
-        pl.Series(name='tess_acc', values=[tesseract_acc], dtype=pl.Float32),
-        pl.Series(name='fine_acc', values=[finereader_acc], dtype=pl.Float32),
-    ])
+    features['tess_acc'] = tesseract_acc
+    features['fine_acc'] = finereader_acc
+    # features = features.with_columns([
+    #     np.array(name='tess_acc', values=[tesseract_acc], dtype=pl.Float32),
+    #     pl.Series(name='fine_acc', values=[finereader_acc], dtype=pl.Float32),
+    # ])
     return features
 
 
@@ -118,7 +120,7 @@ def get_features(img_path, size, save_prepared: bool = True, rotate: bool = True
     if save_prepared:
         cv2.imwrite('data/preprocessed/' + file_name + '.jpg', image)
     parsed_image = ParsedImage(image, file_name)
-    return parsed_image.series.cast(pl.Float32)
+    return parsed_image.series
 
 
 def create_smartdoc_ds(path: Path, save_file: str, size: int = 1024) -> None:
@@ -137,23 +139,23 @@ def create_smartdoc_ds(path: Path, save_file: str, size: int = 1024) -> None:
                                    tqdm.tqdm(
                                        [(file_name, finereader_paths[i], tesseract_paths[i], image_folder_path, size)
                                         for file_name in file_names[i]])))
-    df = pl.concat(df, rechunk=True)
+    df = np.stack(df)
     with open(save_file, 'wb') as f:
         pickle.dump(df, f)
 
 
 def create_eval_ds(path: Path, save_file: str, size: int = 1024) -> None:
-    files = list(path.glob('*.jpg'))
+    files = list(path.glob('*.jpeg'))
     df = [get_features(img_path, size, rotate=False) for img_path in files]
-    df = pl.concat(df, rechunk=True)
+    df = np.stack(df)
     with open(save_file, 'wb') as f:
         pickle.dump(df, f)
 
 
 if __name__ == '__main__':
     # from src.settings import RAW_DATA_PATH
-    create_smartdoc_ds(RAW_DATA_PATH, r'data/ds_1.pkl')
-    # create_eval_ds(Path('data/eval'), 'data/ds_eval.pkl')
+    # create_smartdoc_ds(RAW_DATA_PATH, r'data/ds_1.pkl')
+    create_eval_ds(Path(r'\\p0-nm02-vdic-01.region.vtb.ru\vdidata\UserFolders\VTB4097779\Desktop\classification_dataset'), 'data/ds_eval.pkl')
     # img = preprocess_image(cv2.imread('data/eval/M_Img_WP_D10_L2_r35_a5_b10.jpg.jpg'))
     # plt.imshow(img, cmap='gray')
     # plt.waitforbuttonpress()

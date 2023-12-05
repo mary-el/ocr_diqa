@@ -7,7 +7,7 @@ from numpy.fft import fft2, ifft2
 from src.data.features.utils.libsmop import length, arange
 from src.data.features.utils.logGabor_2D import logGabor_2D
 from src.settings import EPS
-from src.utils import time_of_function
+from src.utils.common import time_of_function
 
 
 @time_of_function
@@ -16,7 +16,7 @@ def foreground_percent(img: np.array) -> float:
 
 
 @time_of_function
-def gradients(img: np.array) -> Tuple[float, float, float, float]:
+def gradients(img: np.array) -> Tuple[float, float, float]:
     foreground = np.sum(img == 255)
     sobelx = cv2.Sobel(img, cv2.CV_64F, 1, 0, ksize=3)
     sobelx = cv2.convertScaleAbs(sobelx)
@@ -27,7 +27,7 @@ def gradients(img: np.array) -> Tuple[float, float, float, float]:
     fy = np.sum(sobely == 255) / (foreground + EPS)
     fxy1 = np.sum(sobelxy == 255) / (foreground + EPS)
     fxy2 = np.sum(sobelxy == 255 * 2) / (foreground + EPS)
-    return fx, fy, fxy1, fxy2
+    return fx, fy, fxy1
 
 
 @time_of_function

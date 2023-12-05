@@ -15,7 +15,7 @@ from sklearn.inspection import permutation_importance
 from scipy.stats import pearsonr, spearmanr
 from sklearn.ensemble import GradientBoostingRegressor
 
-from src.data.smartdoc_dataset import create_smartdoc_ds
+from src.data.requests_dataset import create_requests_ds
 from src.settings import RAW_DATA_PATH
 from src.utils.common import catchtime
 
@@ -23,10 +23,10 @@ from src.utils.common import catchtime
 def split_dataset(load_file: str, save_file: str) -> None:
     with open(str(load_file), 'rb') as f:
         df = pickle.load(f)
-    df = df.drop(columns=['spatial.gradients_4', 'tess_acc', 'cc.SWS',	'cc.BCF',	'cc.SW_1',	'cc.SW_2'])
-    df = df.fill_null(0)
-    arr = np.array(df)
+    # df = df.drop(columns=['spatial.gradients_4', 'tess_acc', 'cc.SWS',	'cc.BCF',	'cc.SW_1',	'cc.SW_2'])
+    arr = df.view((float, len(df.dtype.names)))[:, 0]
     X, y = arr[:, :-1], arr[:, -1]
+    X = np.nan_to_num(X)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     with open(save_file, 'wb') as f:
         pickle.dump((X_train, X_test, y_train, y_test), f)
@@ -39,7 +39,7 @@ def load_split_ds(load_file: str) -> Tuple:
 
 def grid_search(X_train: np.array, y_train: np.array) -> Dict:
     X_train = StandardScaler().fit_transform(MinMaxScaler().fit_transform(X_train))
-    y_train /= 100.
+    # y_train /= 100.
     models = {
         'Linear': LinearRegression(),
         'Ridge': Ridge(),
@@ -79,7 +79,7 @@ def grid_search(X_train: np.array, y_train: np.array) -> Dict:
             'n_iter_no_change': [5],
         },
         'Bagging': {
-            'base_estimator': [Ridge(alpha=0.1, solver='sparse_cg', positive=False, ), LinearRegression()],
+            'base_estimator': [Ridge(alpha=0.1, solver='sparse_cg'), LinearRegression()],
             '_n_estimators': [50, 100],
             '_max_features': [0.1, 0.5, 1.]
         }
@@ -95,16 +95,16 @@ def grid_search(X_train: np.array, y_train: np.array) -> Dict:
 
 def train_model(model, X_train: np.array, y_train: np.array) -> Pipeline:
     pipe = Pipeline(steps=[
-        ('minmax_scaler', MinMaxScaler()),
+        # ('minmax_scaler', MinMaxScaler()),
         ('standard_scaler', StandardScaler()),
         ('regressor', model),
     ])
-    y_train /= 100.
     pipe.fit(X_train, y_train)
     return pipe
 
+
 def evaluate_model(pipe: Pipeline, X_test: np.array, y_test: np.array) -> Tuple[np.array, np.array, Dict]:
-    y_test /= 100.
+    # y_test /= 100.
     y_pred = pipe.predict(X_test)
     metrics = {
         'R2': r2_score,
@@ -121,7 +121,7 @@ def evaluate_model(pipe: Pipeline, X_test: np.array, y_test: np.array) -> Tuple[
 
 
 def plot(y_test: np.array, y_pred: np.array) -> None:
-    plt.hist(y_pred - y_test, bins=100)
+    plt.hist(y_test, bins=10)
     plt.show()
 
 
@@ -133,10 +133,10 @@ def feature_importance(pipe: Pipeline, X_test: np.array, y_test: np.array) -> No
 
 
 if __name__ == '__main__':
-    # create_smartdoc_ds(RAW_DATA_PATH, r'data/small_ds.pkl')
-    ds_file = r'data/ds_eval.pkl'
-    ds_split_file = r'data/ds_eval_split.pkl'
-    split_dataset(ds_file, ds_split_file)
+    # ds_file = r'data/requests.pkl'
+    # create_requests_ds(RAW_DATA_PATH, ds_file)
+    ds_split_file = r'data/req_split.pkl'
+    # split_dataset(ds_file, ds_split_file)
     X_train, X_test, y_train, y_test = load_split_ds(ds_split_file)
     model = SVR(kernel='rbf', gamma=0.25)
     # # model = LinearRegression()
@@ -145,6 +145,6 @@ if __name__ == '__main__':
     with catchtime():
         y_test, y_pred, results = evaluate_model(pipe, X_test, y_test)
     print(results)
-    # # plot(y_test, y_pred)
+    plot(y_test, y_pred)
     # print(grid_search(X_train, y_train))
     # feature_importance(pipe, X_test, y_test)

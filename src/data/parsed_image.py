@@ -5,12 +5,12 @@ from typing import *
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import polars as pl
+from scipy.stats import mode
 
 from src.data.features.cc_features import (
     small_speckle_factor,
     touching_character_factor,
-    broken_character_factor,
+    # broken_character_factor,
     white_speckle_factor,
     stroke_width,
     small_white_speckle,
@@ -24,14 +24,15 @@ from src.data.features.spatial_characteristic_features import (
     gradients
 )
 from src.data.features.statistical_features import (
+    image_entropy,
     mean_sd,
     grounds_mean,
 )
+from src.utils.binarization import page_text_binarization_3
 
 
-def get_cc(img: np.array) -> Tuple[pl.DataFrame, np.array]:
-    output = cv2.connectedComponentsWithStats(img, 4, cv2.CV_32S)
-    (numLabels, labels, stats, centroids) = output
+def get_cc(img: np.array) -> Tuple[np.array, np.array]:
+    (numLabels, labels, stats, centroids) = cv2.connectedComponentsWithStats(img, 4, cv2.CV_32S)
     ccs = []
     for i in range(1, numLabels):
         x = stats[i, cv2.CC_STAT_LEFT]
@@ -40,7 +41,9 @@ def get_cc(img: np.array) -> Tuple[pl.DataFrame, np.array]:
         h = stats[i, cv2.CC_STAT_HEIGHT]
         area = stats[i, cv2.CC_STAT_AREA]
         ccs.append((i, x, y, w, h, area))
-    df = pl.DataFrame(ccs, schema=["label", "x", "y", "w", "h", "area"]).drop_nulls()
+    df = np.array(ccs, dtype={'names': ["label", "x", "y", "w", "h", "area"],
+                              'formats': ['i4'] * 6})
+    # df = df[np.isnan(df).any(axis=1)]
     return df, labels
 
 
@@ -55,15 +58,15 @@ class ParsedImage:
     image: np.array
     thresh: np.array
     inversed: np.array
-    df_cc: pl.DataFrame
+    df_cc: np.array
     labels_cc: np.array
-    df_wcc: pl.DataFrame
+    df_wcc: np.array
     labels_wcc: np.array
-    df_char: pl.DataFrame
+    df_char: np.array
     labels_filtered: np.array
     fs: int
     features: Features
-    series: pl.Series
+    series: np.array
 
     def _resize(self, img: np.array) -> np.array:
         height = int(img.shape[0] * self.width / img.shape[1])
@@ -81,10 +84,10 @@ class ParsedImage:
         plt.imshow(self.labels_filtered, cmap="prism")
         plt.waitforbuttonpress()
 
-    def get_threshold(self, adaptive: bool = True) -> np.array:
-        if adaptive:
+    def get_threshold(self, fast: bool = False) -> np.array:
+        if fast:
             img_blured = cv2.medianBlur(self.image, 3)
-            thresh = cv2.adaptiveThreshold(
+            return cv2.adaptiveThreshold(
                 img_blured,
                 255,
                 cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
@@ -92,30 +95,26 @@ class ParsedImage:
                 11,
                 2,
             )
-        else:
-            thresh = cv2.threshold(
-                self.image, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU
-            )[1]
-        return thresh
+        return page_text_binarization_3(self.image)
 
     def get_inversed(self) -> np.array:
         return cv2.bitwise_not(self.thresh)
 
-    def get_bcc(self) -> Tuple[pl.DataFrame, np.array]:
+    def get_bcc(self) -> Tuple[np.array, np.array]:
         """
         Get Black Connected Components
         """
         df, labels = get_cc(self.thresh)
         return df, labels
 
-    def get_wcc(self) -> Tuple[pl.DataFrame, np.array]:
+    def get_wcc(self) -> Tuple[np.array, np.array]:
         """
         Get White Connected Components
         """
         df, labels = get_cc(self.inversed)
         return df, labels
 
-    def filter_cc(self, min_height=5, max_height=20, min_width=2, max_width=100) -> Tuple[pl.DataFrame, np.array]:
+    def filter_cc(self, min_height=5, max_height=20, min_width=2, max_width=100) -> Tuple[np.array, np.array]:
         """
         Filter character-sized connected components
         """
@@ -125,8 +124,8 @@ class ParsedImage:
         filter3 = self.df_cc["w"] >= min_width
         filter4 = self.df_cc["w"] <= max_width
         filter5 = self.df_cc["area"] >= min_area
-        df_char = self.df_cc.filter(filter1 & filter2 & filter3 & filter4 & filter5)
-        keep_labels = df_char["label"].to_list()
+        df_char = self.df_cc[filter1 & filter2 & filter3 & filter4 & filter5]
+        keep_labels = df_char["label"]
         labels_filtered = np.copy(self.labels_cc)
         labels_filtered[~np.isin(labels_filtered, keep_labels)] = 0
         return df_char, labels_filtered
@@ -134,9 +133,9 @@ class ParsedImage:
     def get_font_size(self) -> int:
         if len(self.df_char) == 0:
             return 0
-        return self.df_char["h"].median()
+        return mode(self.df_char["h"])[0][0]
 
-    def get_feature_df(self) -> pl.Series:
+    def get_feature_df(self) -> np.array:
         feature_names, feature_vals = [], []
         for category_name, category in self.features.__dict__.items():
             for feature_name, feature in category.__dict__.items():
@@ -146,20 +145,20 @@ class ParsedImage:
                     new_vals = feature
                 feature_names.extend(new_names)
                 feature_vals.extend(new_vals)
-        return pl.DataFrame([feature_vals], schema=feature_names)
-        # return pl.Series(feature_vals, index=feature_names)
+        return np.array(tuple(feature_vals), dtype={'names': feature_names,
+                                                    'formats': ['<f8'] * len(feature_names)})
 
-    def __init__(self, image: np.array, name: str = '') -> None:
+    def __init__(self, image: np.array, name: str = '', min_height=5, max_height=20, min_width=2, max_width=100) -> None:
         # import time
-        # start_time = time.perf_counter()
         self.name = name
         self.image = image
         self.width = image.shape[0]
-        self.thresh = self.get_threshold()
+        self.thresh = self.get_threshold(True)
+        # start_time = time.perf_counter()
         self.inversed = self.get_inversed()
         self.df_cc, self.labels_cc = self.get_bcc()
         self.df_wcc, self.labels_wcc = self.get_wcc()
-        self.df_char, self.labels_filtered = self.filter_cc()
+        self.df_char, self.labels_filtered = self.filter_cc(min_height, max_height, min_width, max_width)
         self.fs = self.get_font_size()
         self.features = Features(self)
         self.series = self.get_feature_df()
@@ -178,11 +177,12 @@ class Features:
 
 class ConnectedComponentsFeatures:
     def __init__(self, image: ParsedImage) -> None:
+        self.FS = image.fs
         self.SSF = small_speckle_factor(image.df_cc, image.fs)
         self.TCF = touching_character_factor(image.df_cc, image.fs)
         self.WSF = white_speckle_factor(image.df_wcc)
         self.SWS = small_white_speckle(image.df_wcc, image.fs)
-        self.BCF = broken_character_factor(image.df_cc, image.fs)
+        # self.BCF = broken_character_factor(image.df_cc, image.fs)
         self.SW = stroke_width(image.df_cc)
         # self.stability = stability_of_cc_values(image.image, image.labels_cc)
         self.height_width_ratio = height_width_ratio(image.df_char)
@@ -213,14 +213,14 @@ class SpatialCharacteristicFeatures:
 
 class StatisticalFeatures:
     def __init__(self, image: ParsedImage) -> None:
-        # self.entropy = image_entropy(image.image)
+        self.entropy = image_entropy(image.image)
         self.mean_sd = mean_sd(image.image)
         self.grounds_mean = grounds_mean(image.image, image.thresh)
         # self.uniformities = uniformities(image.image, image.thresh)
 
 
 if __name__ == '__main__':
-    img = cv2.imread('data/img1.jpg')
+    img = cv2.imread('data/img1.jpeg')
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     image = ParsedImage(img)
     print(image.series)

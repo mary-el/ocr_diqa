@@ -23,10 +23,10 @@ from src.utils.common import catchtime
 def split_dataset(load_file: str, save_file: str) -> None:
     with open(str(load_file), 'rb') as f:
         df = pickle.load(f)
-    df = df.drop(columns=['spatial.gradients_4', 'tess_acc', 'cc.SWS',	'cc.BCF',	'cc.SW_1',	'cc.SW_2'])
-    df = df.fill_null(0)
-    arr = np.array(df)
-    X, y = arr[:, :-1], arr[:, -1]
+    # df = df.drop(columns=['spatial.gradients_4', 'tess_acc', 'cc.SWS',	'cc.BCF',	'cc.SW_1',	'cc.SW_2'])
+    arr = df.view((float, len(df.dtype.names)))[:, 0]
+    X, y = arr[:, :-2], arr[:, -1]
+    X = np.nan_to_num(X)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     with open(save_file, 'wb') as f:
         pickle.dump((X_train, X_test, y_train, y_test), f)
@@ -39,7 +39,7 @@ def load_split_ds(load_file: str) -> Tuple:
 
 def grid_search(X_train: np.array, y_train: np.array) -> Dict:
     X_train = StandardScaler().fit_transform(MinMaxScaler().fit_transform(X_train))
-    y_train /= 100.
+    # y_train /= 100.
     models = {
         'Linear': LinearRegression(),
         'Ridge': Ridge(),
@@ -79,7 +79,7 @@ def grid_search(X_train: np.array, y_train: np.array) -> Dict:
             'n_iter_no_change': [5],
         },
         'Bagging': {
-            'base_estimator': [Ridge(alpha=0.1, solver='sparse_cg', positive=False, ), LinearRegression()],
+            'base_estimator': [Ridge(alpha=0.1, solver='sparse_cg'), LinearRegression()],
             '_n_estimators': [50, 100],
             '_max_features': [0.1, 0.5, 1.]
         }
@@ -99,12 +99,12 @@ def train_model(model, X_train: np.array, y_train: np.array) -> Pipeline:
         ('standard_scaler', StandardScaler()),
         ('regressor', model),
     ])
-    y_train /= 100.
+    # y_train /= 100.
     pipe.fit(X_train, y_train)
     return pipe
 
 def evaluate_model(pipe: Pipeline, X_test: np.array, y_test: np.array) -> Tuple[np.array, np.array, Dict]:
-    y_test /= 100.
+    # y_test /= 100.
     y_pred = pipe.predict(X_test)
     metrics = {
         'R2': r2_score,
@@ -134,8 +134,8 @@ def feature_importance(pipe: Pipeline, X_test: np.array, y_test: np.array) -> No
 
 if __name__ == '__main__':
     # create_smartdoc_ds(RAW_DATA_PATH, r'data/small_ds.pkl')
-    ds_file = r'data/ds_eval.pkl'
-    ds_split_file = r'data/ds_eval_split.pkl'
+    ds_file = r'data/mvd.pkl'
+    ds_split_file = r'data/mvd_split.pkl'
     split_dataset(ds_file, ds_split_file)
     X_train, X_test, y_train, y_test = load_split_ds(ds_split_file)
     model = SVR(kernel='rbf', gamma=0.25)
@@ -146,5 +146,5 @@ if __name__ == '__main__':
         y_test, y_pred, results = evaluate_model(pipe, X_test, y_test)
     print(results)
     # # plot(y_test, y_pred)
-    # print(grid_search(X_train, y_train))
+    print(grid_search(X_train, y_train))
     # feature_importance(pipe, X_test, y_test)

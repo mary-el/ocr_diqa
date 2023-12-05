@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 from src.settings import EPS
-from src.utils import time_of_function
+from src.utils.common import time_of_function
 
 
 @time_of_function
