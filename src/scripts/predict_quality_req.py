@@ -23,10 +23,9 @@ from src.utils.common import catchtime
 def split_dataset(load_file: str, save_file: str) -> None:
     with open(str(load_file), 'rb') as f:
         df = pickle.load(f)
-    # df = df.drop(columns=['spatial.gradients_4', 'tess_acc', 'cc.SWS',	'cc.BCF',	'cc.SW_1',	'cc.SW_2'])
-    arr = df.view((float, len(df.dtype.names)))[:, 0]
+    # df.drop(columns=['tess_acc'], inplace=True)
+    arr = np.array(df)
     X, y = arr[:, :-1], arr[:, -1]
-    X = np.nan_to_num(X)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     with open(save_file, 'wb') as f:
         pickle.dump((X_train, X_test, y_train, y_test), f)

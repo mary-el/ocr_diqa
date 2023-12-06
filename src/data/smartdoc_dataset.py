@@ -3,12 +3,12 @@ import pickle
 from pathlib import Path
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import tqdm
 
 from src.data.parsed_image import ParsedImage
-from src.settings import N_PROC, RAW_DATA_PATH
+from src.settings import N_PROC
 from src.utils.common import resize
 
 
@@ -92,7 +92,7 @@ def find_page(thresh: np.array):
 
 
 def get_data_series(file_name: str, finereader_path: Path, tesseract_path: Path, image_folder_path: Path,
-                    size: int) -> np.array:
+                    size: int) -> pd.Series:
     """
     Get feature vector for one document
     """
@@ -106,10 +106,7 @@ def get_data_series(file_name: str, finereader_path: Path, tesseract_path: Path,
         finereader_acc = float(finereader_file.read().split()[12][:-1])
     features['tess_acc'] = tesseract_acc
     features['fine_acc'] = finereader_acc
-    # features = features.with_columns([
-    #     np.array(name='tess_acc', values=[tesseract_acc], dtype=pl.Float32),
-    #     pl.Series(name='fine_acc', values=[finereader_acc], dtype=pl.Float32),
-    # ])
+    features = features.astype('float')
     return features
 
 
@@ -139,7 +136,7 @@ def create_smartdoc_ds(path: Path, save_file: str, size: int = 1024) -> None:
                                    tqdm.tqdm(
                                        [(file_name, finereader_paths[i], tesseract_paths[i], image_folder_path, size)
                                         for file_name in file_names[i]])))
-    df = np.stack(df)
+    df = pd.concat(df, axis=1).T
     with open(save_file, 'wb') as f:
         pickle.dump(df, f)
 
@@ -155,7 +152,9 @@ def create_eval_ds(path: Path, save_file: str, size: int = 1024) -> None:
 if __name__ == '__main__':
     # from src.settings import RAW_DATA_PATH
     # create_smartdoc_ds(RAW_DATA_PATH, r'data/ds_1.pkl')
-    create_eval_ds(Path(r'\\p0-nm02-vdic-01.region.vtb.ru\vdidata\UserFolders\VTB4097779\Desktop\classification_dataset'), 'data/ds_eval.pkl')
+    create_eval_ds(
+        Path(r'\\p0-nm02-vdic-01.region.vtb.ru\vdidata\UserFolders\VTB4097779\Desktop\classification_dataset'),
+        'data/ds_eval.pkl')
     # img = preprocess_image(cv2.imread('data/eval/M_Img_WP_D10_L2_r35_a5_b10.jpg.jpg'))
     # plt.imshow(img, cmap='gray')
     # plt.waitforbuttonpress()
