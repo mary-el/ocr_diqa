@@ -219,5 +219,3 @@ if __name__ == '__main__':
     img = cv2.imread('data/img1.jpg')
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     image = ParsedImage(img)
-    print(image.series)
-    image.show_image()

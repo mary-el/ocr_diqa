@@ -128,7 +128,7 @@ def create_smartdoc_ds(path: Path, save_file: str, size: int = 1024) -> None:
     tesseract_paths = [p / 'OCR_Accuracy_Tesseract' for p in root_paths]
     file_names = []
     for tesseract_path in tesseract_paths:
-        file_names.append(list(x.stem.split('.')[0] for x in list(tesseract_path.glob('*.wacc.txt'))))
+        file_names.append(list(x.stem.split('.')[0] for x in list(tesseract_path.glob('*.wacc.txt'))[:50]))
     df = []
     for i, image_folder_path in enumerate(images_folder_paths):
         with mp.Pool(N_PROC) as pool:
@@ -150,11 +150,11 @@ def create_eval_ds(path: Path, save_file: str, size: int = 1024) -> None:
 
 
 if __name__ == '__main__':
-    # from src.settings import RAW_DATA_PATH
-    # create_smartdoc_ds(RAW_DATA_PATH, r'data/ds_1.pkl')
-    create_eval_ds(
-        Path(r'\\p0-nm02-vdic-01.region.vtb.ru\vdidata\UserFolders\VTB4097779\Desktop\classification_dataset'),
-        'data/ds_eval.pkl')
+    from src.settings import RAW_DATA_PATH
+    create_smartdoc_ds(RAW_DATA_PATH, r'data/ds_500.pkl')
+    # create_eval_ds(
+    #     Path(r'\\p0-nm02-vdic-01.region.vtb.ru\vdidata\UserFolders\VTB4097779\Desktop\classification_dataset'),
+    #     'data/ds_eval.pkl')
     # img = preprocess_image(cv2.imread('data/eval/M_Img_WP_D10_L2_r35_a5_b10.jpg.jpg'))
     # plt.imshow(img, cmap='gray')
     # plt.waitforbuttonpress()

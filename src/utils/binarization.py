@@ -40,7 +40,7 @@ def page_text_binarization_3(image: np.ndarray, scale: int = 1, k_small_holes: f
     image = cv.morphologyEx(src=image, op=cv.MORPH_CLOSE, kernel=kernel)
     image = cv.GaussianBlur(image, (1, 1), 0)
     
-    image = smart_whitening_lines(image, h_restore=True)
+    # image = smart_whitening_lines(image, h_restore=True)
 
     return image
 

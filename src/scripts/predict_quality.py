@@ -24,6 +24,7 @@ def split_dataset(load_file: str, save_file: str) -> None:
     with open(str(load_file), 'rb') as f:
         df = pickle.load(f)
     df.drop(columns=['tess_acc'], inplace=True)
+    df = df.fillna(0)
     arr = np.array(df)
     X, y = arr[:, :-1], arr[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -132,9 +133,9 @@ def feature_importance(pipe: Pipeline, X_test: np.array, y_test: np.array) -> No
 
 
 if __name__ == '__main__':
-    # create_smartdoc_ds(RAW_DATA_PATH, r'data/ds.pkl')
-    ds_file = r'data/ds.pkl'
-    ds_split_file = r'data/ds_split.pkl'
+    # create_smartdoc_ds(RAW_DATA_PATH, r'data/ds1.pkl')
+    ds_file = r'data/ds_500.pkl'
+    ds_split_file = r'data/ds_500_split.pkl'
     split_dataset(ds_file, ds_split_file)
     X_train, X_test, y_train, y_test = load_split_ds(ds_split_file)
     model = SVR(kernel='rbf', gamma=0.25)
