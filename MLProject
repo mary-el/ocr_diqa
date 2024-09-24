@@ -1,5 +1,5 @@
 name: DIQA
-conda_env: environment.yml
+conda_env: env.yml
 entry_points:
-    run_project:
+    main:
         command: "python src/scripts/mlflow_tracking.py"

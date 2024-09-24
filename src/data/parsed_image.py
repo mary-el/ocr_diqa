@@ -27,6 +27,7 @@ from src.data.features.statistical_features import (
     image_entropy,
     mean_sd,
     grounds_mean,
+    uniformities
 )
 from src.utils.binarization import page_text_binarization_3
 
@@ -82,10 +83,10 @@ class ParsedImage:
         plt.imshow(self.labels_filtered, cmap="prism")
         plt.waitforbuttonpress()
 
-    def get_threshold(self, fast: bool = False) -> np.array:
-        if fast:
+    def get_threshold(self, adaptive: bool = True) -> np.array:
+        if adaptive:
             img_blured = cv2.medianBlur(self.image, 3)
-            return cv2.adaptiveThreshold(
+            thresh = cv2.adaptiveThreshold(
                 img_blured,
                 255,
                 cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
@@ -93,8 +94,11 @@ class ParsedImage:
                 11,
                 2,
             )
-        return page_text_binarization_3(self.image)
-
+        else:
+            thresh = cv2.threshold(
+                self.image, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU
+            )[1]
+        return thresh
     def get_inversed(self) -> np.array:
         return cv2.bitwise_not(self.thresh)
 
@@ -178,8 +182,8 @@ class ConnectedComponentsFeatures:
         self.SSF = small_speckle_factor(image.df_cc, image.fs)
         self.TCF = touching_character_factor(image.df_cc, image.fs)
         self.WSF = white_speckle_factor(image.df_wcc)
-        # self.SWS = small_white_speckle(image.df_wcc, image.fs)
-        # self.SW = stroke_width(image.df_cc)
+        self.SWS = small_white_speckle(image.df_wcc, image.fs)
+        self.SW = stroke_width(image.df_cc)
         # self.stability = stability_of_cc_values(image.image, image.labels_cc)
         self.height_width_ratio = height_width_ratio(image.df_char)
         self.characters_to_cc_ratio = characters_to_cc_ratio(image.df_cc, image.df_char)
@@ -213,9 +217,3 @@ class StatisticalFeatures:
         self.mean_sd = mean_sd(image.image)
         self.grounds_mean = grounds_mean(image.image, image.thresh)
         # self.uniformities = uniformities(image.image, image.thresh)
-
-
-if __name__ == '__main__':
-    img = cv2.imread('data/img1.jpg')
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    image = ParsedImage(img)

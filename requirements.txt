@@ -5,3 +5,4 @@ scipy
 tqdm
 opencv-python
 imutils~=0.5.4
+ocrd-fork-pylsd==0.0.3
