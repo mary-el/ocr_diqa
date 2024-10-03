@@ -1,0 +1,9 @@
+MODEL_PARAMS: {'kernel': 'rbf', 'gamma': 0.1, 'degree': 2}
+DS_PATH_SPLIT: 'data/smartdoc_ds_split.pkl'
+MODEL_PATH: 'models/svr'
+RAW_DATA_PATH: 'data/Dataset SmartDoc-QA'
+DS_LINK: "https://zenodo.org/records/5293201/files/Dataset%20SmartDoc-QA.zip?download=1"
+ZIP_PATH: "data/Dataset SmartDoc-QA.zip"
+DS_PATH: 'data/smartdoc_ds.csv'
+EPS: 0.001
+N_PROC: 4

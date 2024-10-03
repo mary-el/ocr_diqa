@@ -1,0 +1,12 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: python ml_pipeline/train/train.py
+    deps:
+    - path: data/smartdoc_ds_split.pkl
+      hash: md5
+    - path: ml_pipeline/train/train.py
+      hash: md5
+    outs:
+    - path: models/svr
+      hash: md5

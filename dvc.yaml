@@ -1,0 +1,18 @@
+stages:
+#  get_data:
+#    cmd: python ml_pipeline/data/data_load.py
+#    deps:
+#      - python ml_pipeline/data/data_load.py
+#    params:
+#      - index_col
+#    outs:
+#      - data/initial_data.csv
+  train:
+    cmd: python ml_pipeline/train/train.py
+    deps:
+      - data/smartdoc_ds_split.pkl
+      - ml_pipeline/train/train.py
+    params:
+      - MODEL_PARAMS
+    outs:
+      - models/svr
