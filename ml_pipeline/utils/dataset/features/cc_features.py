@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from configs import EPS
-from src.utils.common import time_of_function
+from utils.dataset.common import time_of_function
 
 
 @time_of_function

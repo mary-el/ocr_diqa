@@ -7,6 +7,14 @@ stages:
 #      - index_col
 #    outs:
 #      - data/initial_data.csv
+  preprocess:
+    cmd: python ml_pipeline/data/preprocess.py
+    deps:
+      - ml_pipeline/data/preprocess.py
+      - data/smartdoc_ds.csv
+    outs:
+      - data/smartdoc_ds_split.pkl
+
   train:
     cmd: python ml_pipeline/train/train.py
     deps:
@@ -16,3 +24,12 @@ stages:
       - MODEL_PARAMS
     outs:
       - models/svr
+
+  evaluate:
+    cmd: python ml_pipeline/evaluate/evaluate.py
+    deps:
+      - ml_pipeline/evaluate/evaluate.py
+      - data/smartdoc_ds_split.pkl
+      - models/svr
+    outs:
+      - results/svr.csv

@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 import tqdm
 
-from src.parsed_image import ParsedImage
 from configs import N_PROC
-from src.utils.preprocess_smartdoc import preprocess_image
+from utils.dataset.preprocess_smartdoc import preprocess_image
+from .parsed_image import ParsedImage
 
 
 def get_data_series(file_name: str, finereader_path: Path, tesseract_path: Path, image_folder_path: Path,
@@ -32,12 +32,12 @@ def get_data_series(file_name: str, finereader_path: Path, tesseract_path: Path,
 
 
 def get_features(img_path, size, save_prepared: bool = True, rotate: bool = True):
-    image = cv2.imread(str(img_path))
+    img_path = str(img_path)
+    image = cv2.imread(img_path)
     image = preprocess_image(image, size, rotate=rotate)
-    file_name = img_path.name
     if save_prepared:
-        cv2.imwrite('data/preprocessed/' + file_name + '.jpg', image)
-    parsed_image = ParsedImage(image, file_name)
+        cv2.imwrite('data/preprocessed/' + img_path + '.jpg', image)
+    parsed_image = ParsedImage(image, img_path)
     return parsed_image.series
 
 

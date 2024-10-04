@@ -1,12 +1,15 @@
 import logging
 import pickle
+import sys
 
 import click
-import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+sys.path.append('.')
+
 from configs import DS_PATH, DS_PATH_SPLIT
+from utils.utils import process_df
 
 log = logging.getLogger(__name__)
 
@@ -19,12 +22,9 @@ def preprocess_dataset(ds_path: str, save_file: str) -> None:
     Splitting and cleaning dataset
     '''
     log.info(f'Loading {ds_path}')
-    df = pd.read_csv(ds_path)
+    df = pd.read_csv(ds_path, index_col=0)
     df.drop(columns=['tess_acc'], inplace=True)
-    df.replace([np.inf, -np.inf], np.nan, inplace=True)
-    df = df.fillna(0)
-
-    arr = np.array(df)
+    arr = process_df(df)
     X, y = arr[:, :-1], arr[:, -1]
     y = y / 100.
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)

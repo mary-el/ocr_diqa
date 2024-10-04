@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 from configs import EPS
-from src.utils import time_of_function
+from utils.dataset.common import time_of_function
 
 
 @time_of_function

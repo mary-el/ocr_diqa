@@ -1,7 +1,8 @@
 FROM python:3.11
 
-COPY requirements.txt data_load.py preprocess.py configs.py /workdir/
-COPY /src /workdir/src
+COPY data /workdir/data
+COPY utils /workdir/utils
+COPY configs.py /workdir
 WORKDIR /workdir
 
-RUN pip install -r requirements.txt
+RUN pip install -r data/requirements.txt

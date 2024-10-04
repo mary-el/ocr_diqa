@@ -1,10 +1,22 @@
+import sys
 from pathlib import Path
 
 import click
 
+sys.path.append('.')
+
 from configs import RAW_DATA_PATH, DS_PATH
-from src.download_ds import download_smartdoc_ds
-from src.smartdoc_dataset import create_smartdoc_ds
+from utils.dataset.smartdoc_dataset import create_smartdoc_ds
+
+import urllib.request
+import zipfile
+from configs import ZIP_PATH, DS_LINK
+
+
+def download_smartdoc_ds(data_path):
+    urllib.request.urlretrieve(DS_LINK, ZIP_PATH)
+    with zipfile.ZipFile(ZIP_PATH, 'r') as zip_ref:
+        zip_ref.extractall(data_path)
 
 
 @click.command()

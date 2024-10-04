@@ -1,6 +1,8 @@
 FROM python:3.11
 
-COPY requirements.txt evaluate.py configs.py /workdir/
+COPY /evaluate /workdir/evaluate/
+COPY /utils /workdir/utils/
+COPY configs.py /workdir
 WORKDIR /workdir
 
-RUN pip install -r requirements.txt
+RUN pip install -r evaluate/requirements.txt

@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from src.utils.common import resize
+from utils.dataset.common import resize
 
 
 def resize(img: np.array, width: int) -> np.array:
@@ -41,13 +41,7 @@ def preprocess_image(img: np.array, width: int = 1024, min_page_size=100, rotate
         11,
         2,
     )
-    kernel = np.ones((3, 3), np.uint8)
     morph = thresh
-    # morph = cv2.medianBlur(morph, 5, 0)
-    # morph = cv2.erode(morph, kernel, iterations=2)
-    # morph = cv2.morphologyEx(morph, cv2.MORPH_CLOSE, kernel, iterations=1)
-    # morph = cv2.morphologyEx(morph, cv2.MORPH_OPEN, kernel, iterations=7)
-    # try to find a page on the image
     best_approx, max_rectangle = find_page(morph)
     # align and crop the page
     if (max_rectangle[2] > min_page_size) and (max_rectangle[3] > min_page_size):

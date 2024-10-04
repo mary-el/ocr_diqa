@@ -1,5 +1,5 @@
 import logging
-import pickle
+import sys
 
 import click
 import numpy as np
@@ -8,15 +8,13 @@ from scipy.stats import pearsonr, spearmanr
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from sklearn.pipeline import Pipeline
 
+sys.path.append('.')
+
 from configs import RESULTS_PATH, MODEL_PATH, DS_PATH_SPLIT
+from utils.utils import load_pickled_file
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-
-def load_pickled_file(load_file: str):
-    with open(str(load_file), 'rb') as f:
-        return pickle.load(f)
 
 
 def evaluate_model(pipe: Pipeline, X_test: np.array, y_test: np.array):

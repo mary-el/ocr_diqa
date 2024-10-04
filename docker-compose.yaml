@@ -242,20 +242,30 @@ services:
 
   data:
     build:
-      context: ml_pipeline/data
+      context: ml_pipeline
+      dockerfile: data/Dockerfile
     image: data
     restart: "no"
 
   train:
     build:
-      context: ml_pipeline/train
+      context: ml_pipeline
+      dockerfile: train/Dockerfile
     image: train
     restart: "no"
 
   evaluate:
     build:
-      context: ml_pipeline/evaluate
+      context: ml_pipeline
+      dockerfile: evaluate/Dockerfile
     image: evaluate
+    restart: "no"
+
+  predict:
+    build:
+      context: ml_pipeline
+      dockerfile: predict/Dockerfile
+    image: predict
     restart: "no"
 
   # Required because of DockerOperator. For secure access and handling permissions.
