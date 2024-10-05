@@ -1,5 +1,5 @@
 numpy
-scikit-learn
+scikit-learn==1.5.2
 scipy
 click==8.1.3
 pandas

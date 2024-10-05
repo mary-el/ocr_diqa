@@ -74,7 +74,7 @@ x-airflow-common:
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
-    - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
+    - ${AIRFLOW_PROJ_DIR:-.}/config.local:/opt/airflow/config.local
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/data/:/opt/airflow/data
     - ${AIRFLOW_PROJ_DIR:-.}/models/:/opt/airflow/models
@@ -268,7 +268,19 @@ services:
     image: predict
     restart: "no"
 
-  # Required because of DockerOperator. For secure access and handling permissions.
+  app:
+    build:
+      context: ml_pipeline
+      dockerfile: app/Dockerfile
+    image: app
+    restart: "no"
+    ports:
+      - "8000:80"
+    volumes:
+      - ./data/:/workdir/data
+      - ./models/:/workdir/models
+
+      # Required because of DockerOperator. For secure access and handling permissions.
   docker-socket-proxy:
     image: tecnativa/docker-socket-proxy:0.1.1
     environment:

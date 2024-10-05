@@ -6,7 +6,7 @@ from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.utils.dates import days_ago
 from docker.types import Mount
 
-from configs import DS_PATH, DS_PATH_SPLIT, MODEL_PATH, RESULTS_PATH, RAW_DATA_PATH, DS_LINK, IMAGE_PATH
+from configs import DS_PATH, DS_PATH_SPLIT, MODEL_PATH, RESULTS_PATH, RAW_DATA_PATH, IMAGE_PATH
 
 log = logging.getLogger(__name__)
 
@@ -36,6 +36,7 @@ dockerops_kwargs = {
     "docker_url": "tcp://docker-socket-proxy:2375",
     "network_mode": "bridge",
 }
+
 
 @dag("diqa_load_data", start_date=days_ago(0), schedule=None, catchup=False)
 def taskflow_load_data():
