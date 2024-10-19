@@ -31,10 +31,10 @@ def get_data_series(file_name: str, finereader_path: Path, tesseract_path: Path,
     return features
 
 
-def get_features(img_path, size, save_prepared: bool = True, rotate: bool = True):
+def get_features(img_path, size, save_prepared: bool = True):
     img_path = str(img_path)
     image = cv2.imread(img_path)
-    image = preprocess_image(image, size, rotate=rotate)
+    image = preprocess_image(image, size)
     if save_prepared:
         cv2.imwrite('data/preprocessed/' + img_path + '.jpg', image)
     parsed_image = ParsedImage(image, img_path)

@@ -11,3 +11,4 @@ pandas
 pip
 fastapi[standard]==0.115.0
 python-multipart==0.0.12
+prometheus-fastapi-instrumentator==7.0.0

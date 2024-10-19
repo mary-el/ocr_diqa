@@ -24,11 +24,11 @@ def order_points(pts: np.array) -> np.array:
     return rect
 
 
-def preprocess_image(img: np.array, width: int = 1024, min_page_size=100, rotate=False) -> np.array:
+def preprocess_image(img: np.array, width: int = 1024, min_page_size=100) -> np.array:
     """
     Prepare image for processing
     """
-    if rotate:
+    if img.shape[1] > img.shape[0]:
         img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img = resize(img, width)

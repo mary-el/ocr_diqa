@@ -20,7 +20,7 @@ logger.setLevel(logging.INFO)
 def predict(model_path: str, image_path: str):
     logger.info(f'Loading model {model_path}')
     model = load_pickled_file(model_path)
-    df = get_features(image_path, size=SIZE, save_prepared=False, rotate=False).to_frame().transpose()
+    df = get_features(image_path, size=SIZE, save_prepared=False).to_frame().transpose()
     X = process_df(df)
     result = model.predict(X)
     logger.info(f'Quality: {result}')
