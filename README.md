@@ -1,6 +1,9 @@
 # Document Image Quality Assessment pipeline with Airflow and FastAPI
+![DIQA](https://github.com/user-attachments/assets/7b8fa088-8c0b-4590-a61c-6adfa556452e)
 
-DIQA is an important task in document recognition. 
+Document Image Quality Assessment (DIQA) evaluates the suitability of digitized documents for subsequent processing. It looks for things like blurriness, stains, and uneven lighting that can make it hard to read. This is crucial for Optical Character Recognition (OCR) because OCR software works much better with clear images. Poor quality images lead to more mistakes in OCR, wasting time and money. DIQA helps by identifying bad images beforehand, allowing for improvement (like sharpening or brightening) or flagging them for manual review, ensuring more accurate and efficient OCR results.
+
+
 I've used the [SmartDoc QA dataset](https://zenodo.org/records/5293201), consisting of smartphone captured document images with ground truth texts. 
 
 ## Features to study
@@ -34,7 +37,9 @@ I've used the [SmartDoc QA dataset](https://zenodo.org/records/5293201), consist
   - Trigger diqa_load_data to download SmartDoc dataset and get features
   - Trigger diqa_train to train a model
   - Trigger diqa_predict to predict quality score
-* Predict with FastAPI on http://127.0.0.1:8000 
+* Predict with FastAPI on http://127.0.0.1:8000
+* Look at metrics with Prometheus on http://localhost:9090
+* Visualize them with Grafana on http://localhost:1234
 
  
 ## Used articles on DIQA 
