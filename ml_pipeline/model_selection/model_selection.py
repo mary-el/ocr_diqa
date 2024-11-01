@@ -61,22 +61,7 @@ def grid_search(X_train: np.array, y_train: np.array, random=False) -> Dict:
     return best_params
 
 
-def feature_selection(model, X_train, y_train, sfs_figure, sfs_df_filename, k_features, forward):
-    sfs = SFS(model,
-              k_features=k_features,
-              forward=forward,
-              floating=True,
-              scoring='neg_mean_squared_error',
-              cv=4,
-              n_jobs=-1
-              )
-    sfs = sfs.fit(X_train, y_train)
-    sfs_df = pd.DataFrame.from_dict(sfs.get_metric_dict()).T
-    sfs_df.to_csv(sfs_df_filename)
 
-    plot_sfs(sfs.get_metric_dict(), kind='std_dev')
-    plt.savefig(sfs_figure)
-    return sfs
 
 
 def plot(y_test: np.array, y_pred: np.array) -> None:

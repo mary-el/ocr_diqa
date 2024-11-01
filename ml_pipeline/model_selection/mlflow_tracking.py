@@ -1,17 +1,22 @@
 import pickle
 from collections import defaultdict
 
+import matplotlib.pyplot as plt
 import mlflow
 import numpy as np
 import optuna
+import pandas as pd
 from autofeat import AutoFeatRegressor
 from catboost import CatBoostRegressor
 from mlflow.models import infer_signature
+from mlxtend.feature_selection import SequentialFeatureSelector as SFS
+from mlxtend.plotting import plot_sequential_feature_selection as plot_sfs
 from optuna.integration import MLflowCallback
 from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split
 
-from ml_pipeline.train.src.train import train_model, evaluate_model, feature_selection
+from evaluate.evaluate import evaluate_model
+from train.train import train_model
 
 TRACKING_URI = 'http://127.0.0.1:5000'
 
@@ -36,6 +41,24 @@ def autofeat_transform(X_train, y_train, X_test):
     with mlflow.start_run():
         mlflow.sklearn.log_model(feat, artifact_path='AutoFeatRegressor')
     return X_train_tr, X_test_tr
+
+
+def feature_selection(model, X_train, y_train, sfs_figure, sfs_df_filename, k_features, forward):
+    sfs = SFS(model,
+              k_features=k_features,
+              forward=forward,
+              floating=True,
+              scoring='neg_mean_squared_error',
+              cv=4,
+              n_jobs=-1
+              )
+    sfs = sfs.fit(X_train, y_train)
+    sfs_df = pd.DataFrame.from_dict(sfs.get_metric_dict()).T
+    sfs_df.to_csv(sfs_df_filename)
+
+    plot_sfs(sfs.get_metric_dict(), kind='std_dev')
+    plt.savefig(sfs_figure)
+    return sfs
 
 
 def sfs(model, X_train, y_train, figure_file='models/sfs.png', df_file='models/sfs.csv', forward=True,

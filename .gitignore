@@ -172,3 +172,8 @@ cython_debug/
 /results/
 /logs/
 *.json
+/db_data/
+/db_optuna_data/
+/ml_pipeline/
+/mlflow_db_data/
+
