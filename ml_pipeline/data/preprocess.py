@@ -7,9 +7,10 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 sys.path.append('.')
+sys.path.append('./ml_pipeline')
 
 from configs import DS_PATH, DS_PATH_SPLIT
-from utils.utils import process_df
+from utils.utils import process_df, dump_to_pickle_file
 
 log = logging.getLogger(__name__)
 
@@ -29,8 +30,7 @@ def preprocess_dataset(ds_path: str, save_file: str) -> None:
     y = y / 100.
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     log.info(f'Saving to {save_file}')
-    with open(save_file, 'wb') as f:
-        pickle.dump((X_train, X_test, y_train, y_test), f)
+    dump_to_pickle_file(save_file, (X_train, X_test, y_train, y_test))
 
 
 if __name__ == "__main__":

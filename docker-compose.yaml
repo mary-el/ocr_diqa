@@ -345,7 +345,8 @@ services:
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc alias set minio http://s3:9000 ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} &&
-      /usr/bin/mc mb minio/mlflow;
+      /usr/bin/mc mb minio/mlflow; 
+      /usr/bin/mc mb minio/dvc;
       "
 
   mlflow:

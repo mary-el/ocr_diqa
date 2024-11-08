@@ -5,12 +5,12 @@ stages:
     deps:
     - path: data/smartdoc_ds_split.pkl
       hash: md5
-      md5: e1bf64ca043aa57820f7113fd8ace7bd
-      size: 1227158
+      md5: 0a0b7d356a8bcc5b56b6c19a9078bbbe
+      size: 1193078
     - path: ml_pipeline/train/train.py
       hash: md5
-      md5: 458a13c408013eadcf4863fb2949d658
-      size: 1437
+      md5: 39b2d761381012767895d3c8f960f845
+      size: 1310
     params:
       params.yaml:
         MODEL_PARAMS:
@@ -20,8 +20,8 @@ stages:
     outs:
     - path: models/svr
       hash: md5
-      md5: feec318078dfa9406689e8a087c19d87
-      size: 342141
+      md5: f9afa5d0609c08b51539e27a26a13265
+      size: 329973
   preprocess:
     cmd: python ml_pipeline/data/preprocess.py
     deps:
@@ -31,34 +31,30 @@ stages:
       size: 2544093
     - path: ml_pipeline/data/preprocess.py
       hash: md5
-      md5: e6e613f8a17dfc0f336932f3173af444
-      size: 1101
+      md5: 93c5dd8a788e7236c9638aa6ed5c93e8
+      size: 1120
     outs:
     - path: data/smartdoc_ds_split.pkl
       hash: md5
-      md5: e1bf64ca043aa57820f7113fd8ace7bd
-      size: 1227158
-      cloud:
-        diqa-storage-gcp:
-          etag: 08cfb182eeedf188031001
-          version_id: '1727946372978895'
+      md5: 0a0b7d356a8bcc5b56b6c19a9078bbbe
+      size: 1193078
   evaluate:
     cmd: python ml_pipeline/evaluate/evaluate.py
     deps:
     - path: data/smartdoc_ds_split.pkl
       hash: md5
-      md5: e1bf64ca043aa57820f7113fd8ace7bd
-      size: 1227158
+      md5: 0a0b7d356a8bcc5b56b6c19a9078bbbe
+      size: 1193078
     - path: ml_pipeline/evaluate/evaluate.py
       hash: md5
-      md5: a8c639b5cce5ac55358e86ee3bc8c2f1
-      size: 1778
+      md5: 68aa0940efc1d00c05d0f2a302c58fb9
+      size: 1758
     - path: models/svr
       hash: md5
-      md5: feec318078dfa9406689e8a087c19d87
-      size: 342141
+      md5: f9afa5d0609c08b51539e27a26a13265
+      size: 329973
     outs:
     - path: results/svr.csv
       hash: md5
-      md5: 6c83def96454ea676ca61e6a4d59fb8e
+      md5: 5609ad7ce79daa152185351f5045cead
       size: 128

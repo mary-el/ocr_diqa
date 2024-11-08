@@ -1,6 +1,8 @@
 [core]
-    remote = diqa-storage-gcp
-['remote "diqa-storage-gcp"']
-    url = gs://diqa-dvc-storage
-    version_aware = true
-    credentialpath = ../pelagic-hope-435112-n8-85fa5f6dc282.json
+    remote = diqa-s3-dvc
+['remote "diqa-s3-dvc"']
+    url = s3://dvc
+    version_aware = false
+    ACCESS_KEY_ID = user
+    SECRET_ACCESS_KEY = password
+    endpointurl = http://localhost:9000

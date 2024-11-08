@@ -9,6 +9,7 @@ from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from sklearn.pipeline import Pipeline
 
 sys.path.append('.')
+sys.path.append('./ml_pipeline')
 
 from configs import RESULTS_PATH, MODEL_PATH, DS_PATH_SPLIT
 from utils.utils import load_pickled_file

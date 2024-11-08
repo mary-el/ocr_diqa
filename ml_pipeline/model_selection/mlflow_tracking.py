@@ -106,16 +106,12 @@ def objective(trial: optuna.Trial, X_train, y_train) -> float:
 def optuna_optimization(ds_file, study_name):
     with open(ds_file, 'rb') as f:
         X_train, X_test, y_train, y_test = pickle.load(f)
-    RUN_NAME = 'model_bayesian_search'
-
-    with mlflow.start_run(run_name=RUN_NAME, experiment_id=EXPERIMENT_ID) as run:
-        run_id = run.info.run_id
 
     mlflc = MLflowCallback(
         tracking_uri=TRACKING_URI,
         metric_name="MAE",
         create_experiment=False,
-        mlflow_kwargs={'experiment_id': EXPERIMENT_ID, 'tags': {'mlflow.run_id': run_id}}
+        mlflow_kwargs={'experiment_id': EXPERIMENT_ID}
     )
     study = optuna.create_study(direction='minimize', study_name=study_name,
                                 sampler=optuna.samplers.TPESampler(), load_if_exists=True)

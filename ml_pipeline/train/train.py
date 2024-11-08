@@ -8,18 +8,13 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 sys.path.append('.')
+sys.path.append('./ml_pipeline')
 
 from configs import MODEL, MODEL_PATH, DS_PATH_SPLIT, MODEL_PARAMS
-from utils.utils import load_pickled_file
+from utils.utils import load_pickled_file, dump_to_pickle_file
 
 log = logging.getLogger(__name__)
 
-
-# import dvc.api
-
-# params = dvc.api.params_show()
-
-# model_params = params['MODEL_PARAMS']
 
 
 def train_model(model, X_train: np.array, y_train: np.array) -> Pipeline:
@@ -34,8 +29,7 @@ def train_model(model, X_train: np.array, y_train: np.array) -> Pipeline:
 
 def save_model(pipeline, model_path: str):
     log.info(f'Saving model to {model_path}')
-    with open(model_path, 'wb') as f:
-        pickle.dump(pipeline, f)
+    dump_to_pickle_file(model_path, pipeline)
 
 
 @click.command()
